@@ -233,8 +233,7 @@ type IstioEgressListenerWrapper struct {
 	virtualServices []config.Config
 
 	// An index of hostname to the namespaced name of the VirtualService containing the most
-	// relevant host match. Depending on the `PERSIST_OLDEST_FIRST_HEURISTIC_FOR_VIRTUAL_SERVICE_HOST_MATCHING`
-	// feature flag, it could be the most specific host match or the oldest host match.
+	// specific host match.
 	mostSpecificWildcardVsIndex map[host.Name]types.NamespacedName
 }
 
@@ -438,7 +437,7 @@ func (sc *SidecarScope) collectImportedServices(ps *PushContext, configNamespace
 				sc.AddConfigDependencies(cfg.HashCode())
 			}
 			v := vs.Spec.(*networking.VirtualService)
-			for h, ports := range virtualServiceDestinations(v) {
+			for h, ports := range virtualServiceDestinationsFilteredBySourceNamespace(v, configNamespace) {
 				byNamespace := ps.ServiceIndex.HostnameAndNamespace[host.Name(h)]
 				// Default to this hostname in our config namespace
 				if s, ok := byNamespace[configNamespace]; ok {
